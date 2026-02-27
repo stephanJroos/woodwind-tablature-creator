@@ -66,17 +66,34 @@ MuseScore {
       // Last bit = plus sign indicator
       //---------------------------------------------------------
 
-      //Dictionary for your whistle, specifying the note and the fingering pattern (starting from the fipple end).
-      //2 indicates a closed hole, 1 indicates a half hole, 0 indicates open hole. The last bit is a reserved flag for whether a (+) symbol should be drawn.
-      property var fingeringDict: ({
-            "G5": "1111111111",
-            "A5": "1111111100",
-            "B5": "1111111000",
-            "C6": "1111110000",
-            "D6": "1111100000",
-            "E6": "1111000000",
-            "F#6": "1110000000",
-            "G6": "1100000001"
+      //Dictionary for your whistle, specifying the note and the fingering pattern (left-> right, starting from the fipple end).
+      //2 indicates a closed hole, 1 indicates a half hole, 0 indicates open hole. The last digit is a reserved section indicating how many plusses (+) should be drawn to signal overblowing.
+      property var fingeringDict: ({//Fingering dictionary for custom chromatic whistle in the key of
+            "G4": "2222222220",      // G4
+            "G#4": "2222222200",     // G#4 / Ab4
+            "A4": "2222222000",      // A4
+            "A#4": "2222220000",     // A#4 / Bb4
+            "B4": "2222200000",      // B4
+            "C5": "2222000000",      // C5 (middle C)
+            "C#5": "2220000000",     // C#5 / Db5
+            "D5": "2202000000",      // D5
+            "D#5": "2022200000",     // D#5 / Eb5
+            "E5": "2020000000",      // E5
+            "F5": "0220000000",      // F5
+            "F#5": "0000000000",     // F#5 / Gb5
+            "G5": "2222222221",      // G5
+            "G#5": "2222222201",     // G#5 / Ab5
+            "A5": "2222222001",      // A5
+            "A#5": "2222220001",     // A#5 / Bb5
+            "B5": "2222200001",      // B5
+            "C6": "2222000001",      // C6 (one octave above middle C)
+            "C#6": "2220000001",     // C#6 / Db6
+            "D6": "2200000001",      // D6
+            "D#6": "2222222202",     // D#6 / Eb6
+            "E6": "2222222002",      // E6
+            "F6": "2222220002",      // F6
+            "F#6": "0222200002",     // F#6 / Gb6
+            "G#6": "0222222222"      // G#6
       })
 
       onRun: {
@@ -264,10 +281,19 @@ MuseScore {
                               }
 
                               //-------------------------------------------------
-                              // Replace plus placeholder ($+)
+                              // Replace plus placeholder ($+) with number of plusses based on plusBit
                               //-------------------------------------------------
 
-                              var plusSymbol = (plusBit === "1") ? "+" : " "
+                              // Parse plusBit as integer to determine how many plusses to insert
+                              var plusCount = parseInt(plusBit)
+                              var plusSymbol = "+".repeat(plusCount)
+
+                              // If plusCount is 0, use empty string
+                              if (plusCount === 0) {
+                                    plusSymbol = ""
+                              }
+
+                              // Replace all $+ placeholders with the generated plus string
                               while (output.indexOf("$+") !== -1) {
                                     output = output.replace("$+", plusSymbol)
                               }
