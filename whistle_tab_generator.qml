@@ -24,9 +24,9 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import MuseScore 3.0
-import FileIO 3.0
 
 MuseScore {
+      id: mscore
       version: "4.1"
       title: "ASCII Whistle Fingering"
       description: "Inserts ASCII fingering diagrams using binary dictionary"
@@ -42,14 +42,20 @@ MuseScore {
       property color backgroundColor: isDarkMode ? "#333333" : "#ffffff"
 
       //---------------------------------------------------------
-      // USER SETTINGS (defaults)
+      // USER SETTINGS (& defaults)
       //---------------------------------------------------------
 
-      property int userFontSize: 14
+      property int userFontSize: 5
       property int userJustification: 1   // 0=left,1=center,2=right
-      property real userOffsetY: 3.0
-      property real userLineSpacing: 0.5
-      property string userFormatString: "$1  \n$2\n$3\n$4\n$5\n$6\n$7\n$8\n$9\n$+"
+      property real userOffsetY: 1.2
+      property real userLineSpacing: 0.8
+      property string userFormatString: "$1    \n$2\n$3\n$4\n$5\n$6\n$7\n$8\n$9\n$+"
+
+      property int defaultFontSize: 5
+      property int defaultJustification: 1
+      property real defaultOffsetY: 1.2
+      property real defaultLineSpacing: 0.8
+      property string defaultFormatString: "$1    \n$2\n$3\n$4\n$5\n$6\n$7\n$8\n$9\n$+"
 
       // For undo/redo
       property var history: 0
@@ -78,6 +84,8 @@ MuseScore {
                   error("No score open.\nThis plugin requires an open score to run.\n")
                   quit()
             }
+
+            loadSettings()
       }
 
       function getHistory() {
@@ -85,6 +93,73 @@ MuseScore {
                   history = new commandHistory()
             }
             return history
+      }
+
+      function saveSettings() {
+            return
+            if (!curScore) {
+                  console.log("No score open, cannot save preferences")
+                  return
+            }
+
+            var preferences = curScore.preferences
+            if (preferences) {
+                  preferences.setString("whistleTab/formatString", userFormatString)
+                  preferences.setInt("whistleTab/fontSize", userFontSize)
+                  preferences.setInt("whistleTab/justification", userJustification)
+                  preferences.setDouble("whistleTab/offsetY", userOffsetY)
+                  preferences.setDouble("whistleTab/lineSpacing", userLineSpacing)
+                  preferences.setString("whistleTab/fingeringDict", JSON.stringify(fingeringDict))
+                  console.log("Settings saved")
+            }
+      }
+
+      function loadSettings() {
+            return
+            if (!curScore) {
+                  console.log("No score open, using defaults")
+                  return
+            }
+
+            var preferences = curScore.preferences
+            if (preferences) {
+                  // Load with defaults if not found
+                  userFormatString = preferences.getString("whistleTab/formatString", userFormatString)
+                  userFontSize = preferences.getInt("whistleTab/fontSize", userFontSize)
+                  userJustification = preferences.getInt("whistleTab/justification", userJustification)
+                  userOffsetY = preferences.getDouble("whistleTab/offsetY", userOffsetY)
+                  userLineSpacing = preferences.getDouble("whistleTab/lineSpacing", userLineSpacing)
+
+                  var dictStr = preferences.getString("whistleTab/fingeringDict", "")
+                  if (dictStr) {
+                        fingeringDict = JSON.parse(dictStr)
+                  }
+
+                  // Update UI elements with loaded values
+                  fontSizeField.text = userFontSize
+                  offsetField.text = userOffsetY.toFixed(1)
+                  spacingField.text = userLineSpacing.toFixed(1)
+                  justCombo.currentIndex = userJustification
+                  formatInput.text = userFormatString
+                        updatePreview()
+
+                        console.log("Settings loaded")
+            }
+      }
+
+      function resetToDefaults() {
+            getHistory().begin()
+
+            // Set all properties to default values
+            setUserFontSize(defaultFontSize)
+            setUserJustification(defaultJustification)
+            setUserOffsetY(defaultOffsetY)
+            setUserLineSpacing(defaultLineSpacing)
+            setUserFormatString(defaultFormatString)
+
+            getHistory().end()
+            saveSettings() // Save after reset
+            updatePreview()
       }
 
       function error(errorMessage) {
@@ -219,7 +294,7 @@ MuseScore {
             text.placement = Placement.BELOW
             text.autoplace = false
             text.offsetY = userOffsetY
-            text.lineSpacing = userLineSpacing // Multiply by 10 for better range
+            text.lineSpacing = userLineSpacing
 
             if (userJustification === 0)
                   text.align = Align.LEFT
@@ -384,11 +459,12 @@ MuseScore {
             )
       }
 
-      function formatStringChanged() {
+      function formatStringChanged(formatString) {
             getHistory().begin()
             setModified(true)
-            setUserFormatString(formatInput.text)
+            setUserFormatString(formatString)
             getHistory().end()
+            saveSettings()
       }
 
       function fontSizeChanged(size) {
@@ -397,59 +473,38 @@ MuseScore {
             setUserFontSize(size)
             updatePreview()
             getHistory().end()
+            saveSettings()
       }
 
-      function justificationChanged() {
+      function justificationChanged(justification) {
             getHistory().begin()
             setModified(true)
-            setUserJustification(justCombo.currentIndex)
+            setUserJustification(justification)
             updatePreview()
             getHistory().end()
+            saveSettings()
       }
 
-      function offsetYChanged() {
+      function offsetYChanged(offset) {
             getHistory().begin()
             setModified(true)
-            setUserOffsetY(offsetSpin.value / 10)
+            setUserOffsetY(offset)
             updatePreview()
             getHistory().end()
+            saveSettings()
       }
 
-      function lineSpacingChanged() {
+      function lineSpacingChanged(spacing) {
             getHistory().begin()
             setModified(true)
-            setUserLineSpacing(spacingSpin.value / 10)
+            setUserLineSpacing(spacing)
             updatePreview()
             getHistory().end()
-      }
-
-      function formatCurrentValues() {
-            var data = {
-                  fontSize: userFontSize,
-                  justification: userJustification,
-                  offsetY: userOffsetY,
-                  lineSpacing: userLineSpacing,
-                  formatString: userFormatString,
-                        fingeringDict: fingeringDict
-            }
-            return JSON.stringify(data)
-      }
-
-      function restoreSavedValues(data) {
-            getHistory().begin()
-            setUserFontSize(data.fontSize)
-            setUserJustification(data.justification)
-            setUserOffsetY(data.offsetY)
-            setUserLineSpacing(data.lineSpacing)
-            setUserFormatString(data.formatString)
-            // Restore fingering dict if present
-            if (data.hasOwnProperty('fingeringDict')) {
-                  fingeringDict = data.fingeringDict
-            }
-            getHistory().end()
+            saveSettings()
       }
 
       Item {
+            id: root
             anchors.fill: parent
 
             GridLayout {
@@ -496,7 +551,7 @@ MuseScore {
                                     color: sysPal.text
                                     selectionColor: sysPal.highlight
                                     selectedTextColor: sysPal.highlightedText
-                                    validator: IntValidator { bottom: 1; top: 72 }
+                                    validator: IntValidator { bottom: 1; top: 999 }
                                     background: Rectangle {
                                           color: sysPal.window
                                           border.color: sysPal.mid
@@ -505,7 +560,7 @@ MuseScore {
                                     // Handle Enter key press
                                     onAccepted: {
                                           var newValue = parseInt(text)
-                                          if (!isNaN(newValue) && newValue >= 1 && newValue <= 72) {
+                                          if (!isNaN(newValue) && newValue >= 1 && newValue <= 999) {
                                                 if (newValue !== userFontSize) {
                                                       fontSizeChanged(newValue)
                                                 }
@@ -518,7 +573,7 @@ MuseScore {
                                     onActiveFocusChanged: {
                                           if (!activeFocus) {
                                                 var newValue = parseInt(text)
-                                                if (!isNaN(newValue) && newValue >= 1 && newValue <= 72) {
+                                                if (!isNaN(newValue) && newValue >= 1 && newValue <= 999) {
                                                       if (newValue !== userFontSize) {
                                                             fontSizeChanged(newValue)
                                                       }
@@ -531,7 +586,7 @@ MuseScore {
                                     // Update preview in real-time as user types
                                     onTextChanged: {
                                           var newValue = parseInt(text)
-                                          if (!isNaN(newValue) && newValue >= 1 && newValue <= 72) {
+                                          if (!isNaN(newValue) && newValue >= 1 && newValue <= 999) {
                                                 // Temporarily update preview without committing to history
                                                 previewLabel.font.pointSize = newValue
                                           }
@@ -549,7 +604,7 @@ MuseScore {
                                     model: ["Left", "Center", "Right"]
                                     currentIndex: userJustification
                                     onActivated: {
-                                          justificationChanged()
+                                          justificationChanged(userJustification)
                                           updatePreview()
                                     }
                                     contentItem: Text {
@@ -579,7 +634,7 @@ MuseScore {
                                     color: sysPal.text
                                     selectionColor: sysPal.highlight
                                     selectedTextColor: sysPal.highlightedText
-                                    validator: DoubleValidator { bottom: -20.0; top: 20.0; decimals: 1 }
+                                    validator: DoubleValidator { bottom: -999.0; top: 999.0; decimals: 1 }
                                     background: Rectangle {
                                           color: sysPal.window
                                           border.color: sysPal.mid
@@ -587,7 +642,7 @@ MuseScore {
 
                                     onAccepted: {
                                           var newValue = parseFloat(text)
-                                          if (!isNaN(newValue) && newValue >= -200.0 && newValue <= 200.0) {
+                                          if (!isNaN(newValue) && newValue >= -999.0 && newValue <= 999.0) {
                                                 if (newValue !== userOffsetY) {
                                                       offsetYChanged(newValue)
                                                       updatePreview()
@@ -600,7 +655,7 @@ MuseScore {
                                     onActiveFocusChanged: {
                                           if (!activeFocus) {
                                                 var newValue = parseFloat(text)
-                                                if (!isNaN(newValue) && newValue >= -200.0 && newValue <= 200.0) {
+                                                if (!isNaN(newValue) && newValue >= -999.0 && newValue <= 999.0) {
                                                       if (newValue !== userOffsetY) {
                                                             offsetYChanged(newValue)
                                                             updatePreview()
@@ -646,7 +701,7 @@ MuseScore {
                                     onActiveFocusChanged: {
                                           if (!activeFocus) {
                                                 var newValue = parseFloat(text)
-                                                if (!isNaN(newValue) && newValue >= 0 && newValue <= 6.0) {
+                                                if (!isNaN(newValue) && newValue >= 0 && newValue <= 999) {
                                                       if (newValue !== userLineSpacing) {
                                                             lineSpacingChanged(newValue)
                                                             updatePreview()
@@ -660,7 +715,7 @@ MuseScore {
                         }
                   }
 
-                  // MIDDLE ROW - Save/Load/Undo/Redo Buttons
+                  // MIDDLE ROW - Undo/Redo/Reset Buttons
                   RowLayout {
                         Layout.columnSpan: 2
                         Layout.alignment: Qt.AlignRight
@@ -669,10 +724,10 @@ MuseScore {
                         Layout.bottomMargin: 10
 
                         Button {
-                              id: saveButton
-                              text: qsTranslate("PrefsDialogBase", "Save Settings")
+                              id: resetButton
+                              text: "Reset to Defaults"
                               contentItem: Text {
-                                    text: saveButton.text
+                                    text: resetButton.text
                                     color: sysPal.buttonText
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
@@ -682,27 +737,7 @@ MuseScore {
                                     border.color: sysPal.mid
                               }
                               onClicked: {
-                                    saveDialog.folder = filePath
-                                    saveDialog.visible = true
-                              }
-                        }
-
-                        Button {
-                              id: loadButton
-                              text: qsTranslate("PrefsDialogBase", "Load Settings")
-                              contentItem: Text {
-                                    text: loadButton.text
-                                    color: sysPal.buttonText
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
-                              }
-                              background: Rectangle {
-                                    color: sysPal.button
-                                    border.color: sysPal.mid
-                              }
-                              onClicked: {
-                                    loadDialog.folder = filePath
-                                    loadDialog.visible = true
+                                    resetToDefaults()  // ADDED: Reset button handler
                               }
                         }
 
@@ -810,7 +845,7 @@ MuseScore {
                                                 }
                                                 property var previousText: userFormatString
                                                 onEditingFinished: {
-                                                      formatStringChanged()
+                                                      formatStringChanged(formatInput.text)
                                                             updatePreview()
                                                 }
                                                 onTextChanged: {
@@ -888,11 +923,7 @@ MuseScore {
                               }
                               onClicked: {
                                     if (applyFingerings()) {
-                                          if (modified) {
-                                                quitDialog.open()
-                                          } else {
-                                                quit()
-                                          }
+                                         quit()
                                     }
                               }
                         }
@@ -911,11 +942,7 @@ MuseScore {
                                     border.color: sysPal.mid
                               }
                               onClicked: {
-                                    if (modified) {
-                                          quitDialog.open()
-                                    } else {
-                                          quit()
-                                    }
+                                    quit()
                               }
                         }
                   }
@@ -929,63 +956,6 @@ MuseScore {
             onAccepted: {
                   errorDialog.close()
             }
-      }
-
-      MessageDialog {
-            id: quitDialog
-            title: "Quit?"
-            text: "Do you want to quit the plugin?"
-            detailedText: "You have unsaved changes. You can save your settings to a file before quitting if you like."
-            standardButtons: [StandardButton.Ok, StandardButton.Cancel]
-            onAccepted: {
-                  quit()
-            }
-            onRejected: {
-                  quitDialog.close()
-            }
-      }
-
-      FileIO {
-            id: saveFile
-            source: ""
-      }
-
-      FileIO {
-            id: loadFile
-            source: ""
-      }
-
-      function getFile(dialog) {
-            return dialog.filePath
-      }
-
-      FileDialog {
-            id: loadDialog
-            title: "Load Settings"
-            onAccepted: {
-                  loadFile.source = getFile(loadDialog)
-                  var data = JSON.parse(loadFile.read())
-                  restoreSavedValues(data)
-                  loadDialog.visible = false
-            }
-            onRejected: {
-                  loadDialog.visible = false
-            }
-            visible: false
-      }
-
-      FileDialog {
-            id: saveDialog
-            title: "Save Settings"
-            onAccepted: {
-                  saveFile.source = getFile(saveDialog)
-                  saveFile.write(formatCurrentValues())
-                  saveDialog.visible = false
-            }
-            onRejected: {
-                  saveDialog.visible = false
-            }
-            visible: false
       }
 
       // Command pattern for undo/redo
