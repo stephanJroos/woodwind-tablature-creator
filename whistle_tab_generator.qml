@@ -45,13 +45,13 @@ MuseScore {
       // USER SETTINGS (& defaults)
       //---------------------------------------------------------
 
-      property int userFontSize: 7
+      property int userFontSize: 8
       property int userJustification: 1   // 0=left,1=center,2=right
       property real userOffsetY: 1.2
       property real userLineSpacing: 0.6
       property string userFormatString: "$1    \n$2\n$3\n$4\n$5\n$6\n$7\n$8\n$9\n$+"
 
-      property int defaultFontSize: 7
+      property int defaultFontSize: 8
       property int defaultJustification: 1
       property real defaultOffsetY: 1.2
       property real defaultLineSpacing: 0.6
@@ -225,7 +225,7 @@ MuseScore {
 
       //Build fingering text using binary representation of the fingering for a note.
       //The last bit is the plus bit, indicating the first octave (0) or the second octave (1), to be annotated with a +
-      function buildFingeringText(binaryString, formatString) {
+      function buildFingeringText(binaryString, formatString, noteName) {
 
             //-------------------------------------------------
             // Basic validation
@@ -342,6 +342,110 @@ MuseScore {
       }
 
       //---------------------------------------------------------
+      // CHECK FOR EXISTING ANNOTATIONS
+      //---------------------------------------------------------
+
+      function hasExistingAnnotations() {
+            if (typeof curScore === "undefined") {
+                  return false
+            }
+
+            var cursor = curScore.newCursor()
+            cursor.rewind(0)
+
+            // Get the first segment
+            var segment = cursor.segment
+
+            // Iterate through all segments
+            while (segment) {
+                  // Check all tracks (staff * 4 + voice)
+                  for (var track = 0; track < curScore.ntracks; track++) {
+                        var element = segment.elementAt(track)
+
+                        // If this track has a chord
+                        if (element && element.type === Element.CHORD) {
+                              var chord = element
+
+                              // Some text elements are attached to the segment, not the chord
+                              var annotations = segment.annotations
+                              if (annotations) {
+                                    for (var i = 0; i < annotations.length; i++) {
+                                          var annotation = annotations[i]
+                                          // Check if this annotation belongs to the same track
+                                          if (annotation.track === track && annotation.type === Element.STAFF_TEXT) {
+                                                var text = annotation.text
+                                                if (text && (text.indexOf("●") !== -1 ||
+                                                      text.indexOf("◐") !== -1 ||
+                                                      text.indexOf("○") !== -1 ||
+                                                      text.indexOf("☒") !== -1)) {
+                                                      return true
+                                                      }
+                                          }
+                                    }
+                              }
+                        }
+                  }
+                  segment = segment.next
+            }
+
+            return false
+      }
+      //---------------------------------------------------------
+      // REMOVE EXISTING ANNOTATIONS
+      //---------------------------------------------------------
+
+      function removeExistingAnnotations() {
+            if (typeof curScore === "undefined") {
+                  return 0
+            }
+
+            var cursor = curScore.newCursor()
+            var removed = 0
+
+            // Iterate through all tracks
+            for (var track = 0; track < curScore.ntracks; track++) {
+                  cursor.rewind(0)
+                  cursor.track = track
+
+                         // Iterate through all segments
+            while (cursor.segment) {
+                  // Check all tracks (staff * 4 + voice)
+                  for (var track = 0; track < curScore.ntracks; track++) {
+                        var element = cursor.segment.elementAt(track)
+
+                        // If this track has a chord
+                        if (element && element.type === Element.CHORD) {
+                              var chord = element
+
+                              // Some text elements are attached to the segment, not the chord
+                              var annotations = cursor.segment.annotations
+                              if (annotations) {
+                                    for (var i = 0; i < annotations.length; i++) {
+                                          var annotation = annotations[i]
+                                          // Check if this annotation belongs to the same track
+                                          if (annotation.track === track && annotation.type === Element.STAFF_TEXT) {
+                                                var text = annotation.text
+                                                if (text && (text.indexOf("●") !== -1 ||
+                                                      text.indexOf("◐") !== -1 ||
+                                                      text.indexOf("○") !== -1 ||
+                                                      text.indexOf("☒") !== -1)) {
+                                                      removeElement(annotation)
+                                                      }
+                                          }
+                                    }
+                              }
+                        }
+                  }
+                  //cursor.segment = cursor.segment.next
+                  cursor.next()
+            }
+            }
+
+            console.log("Removed", removed, "existing annotations")
+            return removed
+      }
+
+      //---------------------------------------------------------
       // APPLY FINGERINGS
       //---------------------------------------------------------
 
@@ -376,7 +480,7 @@ MuseScore {
                               text.text = "☒"
                               console.log("Note not in dictionary:", noteName)
                         } else {
-                              var diagram = buildFingeringText(fingeringDict[noteName], userFormatString)
+                              var diagram = buildFingeringText(fingeringDict[noteName], userFormatString, noteName)
                               text.text = diagram
                               console.log("Note:", noteName, "Diagram:", diagram.replace(/\n/g, "\\n"))
                         }
@@ -543,6 +647,10 @@ MuseScore {
       Item {
             id: root
             anchors.fill: parent
+
+        ScrollView {
+                anchors.fill: parent
+                clip: true
 
             GridLayout {
                   columns: 2
@@ -959,8 +1067,13 @@ MuseScore {
                                     border.color: sysPal.mid
                               }
                               onClicked: {
-                                    if (applyFingerings()) {
-                                         quit()
+                                    // Check for existing annotations
+                                    if (hasExistingAnnotations()) {
+                                          overwriteDialog.open()
+                                    } else {
+                                          // No existing annotations, just apply
+                                       if(applyFingerings())
+                                             quit()
                                     }
                               }
                         }
@@ -984,6 +1097,7 @@ MuseScore {
                         }
                   }
             }
+         }
       }
 
       MessageDialog {
@@ -994,6 +1108,25 @@ MuseScore {
                   errorDialog.close()
             }
       }
+
+      MessageDialog {
+            id: overwriteDialog
+            title: "Existing Annotations Found"
+            text: "This score already contains whistle fingering annotations"
+            detailedText: "Would you like to override them?"
+            standardButtons: [StandardButton.Ok, StandardButton.Cancel]
+            onAccepted: {
+                  removeExistingAnnotations()
+                  if(applyFingerings())
+                        quit()
+
+            }
+            onRejected: {
+                  overwriteDialog.close()
+            }
+      }
+
+
 
       // Command pattern for undo/redo
       function commandHistory() {
