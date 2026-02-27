@@ -173,9 +173,7 @@ MuseScore {
                               //-------------------------------------------------
 
                               for (var i = 0; i < holeCount; i++) {
-
                                     var symbol
-
                                     if (binaryString[i] === "2")
                                           symbol = "●"
                                           else if (binaryString[i] === "1")
@@ -183,8 +181,11 @@ MuseScore {
                                                 else
                                                       symbol = "○"
 
-                                                      var token = new RegExp("\\$" + (i+1) + "(?!\\d)", "g")
-                                                      output = output.replace(token, symbol)
+                                                      // Use global replace to replace all occurrences
+                                                      var token = "$" + (i+1)
+                                                      while (output.indexOf(token) !== -1) {
+                                                            output = output.replace(token, symbol)
+                                                      }
                               }
 
                               //-------------------------------------------------
@@ -192,16 +193,20 @@ MuseScore {
                               //-------------------------------------------------
 
                               var plusSymbol = (plusBit === "1") ? "+" : " "
-                              output = output.replace(/\$\+/g, plusSymbol)
+                              while (output.indexOf("$+") !== -1) {
+                                    output = output.replace("$+", plusSymbol)
+                              }
 
                               //-------------------------------------------------
                               // Final validation
                               //-------------------------------------------------
 
-                              if (/\$\d+|\$\+/.test(output))
-                                    return "Regex Validation Error"
+                              if (output.indexOf("$") !== -1) {
+                                    console.log("Warning: Unreplaced placeholders in:", output)
+                                    return output  // Return anyway with what we have
+                              }
 
-                                    return output
+                              return output
       }
 
       //---------------------------------------------------------
@@ -209,11 +214,12 @@ MuseScore {
       //---------------------------------------------------------
 
       function formatText(text) {
+            console.log("Formatting text - setting fontSize to:", userFontSize)
             text.fontSize = userFontSize
             text.placement = Placement.BELOW
             text.autoplace = false
             text.offsetY = userOffsetY
-            text.lineSpacing = userLineSpacing
+            text.lineSpacing = userLineSpacing // Multiply by 10 for better range
 
             if (userJustification === 0)
                   text.align = Align.LEFT
@@ -233,11 +239,19 @@ MuseScore {
                   return false
             }
 
+            console.log("=== Applying Fingerings ===")
+            console.log("userFontSize:", userFontSize)
+            console.log("userFormatString:", userFormatString)
+            console.log("userJustification:", userJustification)
+            console.log("userOffsetY:", userOffsetY)
+            console.log("userLineSpacing:", userLineSpacing)
+
             curScore.startCmd()
 
             var cursor = curScore.newCursor()
             cursor.rewind(0)
 
+            var count = 0
             while (cursor.segment) {
                   if (cursor.element && cursor.element.type === Element.CHORD) {
                         var chord = cursor.element
@@ -248,20 +262,32 @@ MuseScore {
 
                         if (!fingeringDict[noteName]) { //note not in fingering dictionary
                               text.text = "☒"
+                              console.log("Note not in dictionary:", noteName)
                         } else {
                               var diagram = buildFingeringText(fingeringDict[noteName], userFormatString)
                               text.text = diagram
+                              console.log("Note:", noteName, "Diagram:", diagram.replace(/\n/g, "\\n"))
                         }
 
                         cursor.add(text)
                         formatText(text)
+
+                              // Verify the text object has the properties set
+                              console.log("Text fontSize after format:", text.fontSize)
+                              console.log("Text offsetY after format:", text.offsetY)
+                              console.log("Text lineSpacing after format:", text.lineSpacing)
+
+                              count++
                   }
                   cursor.next()
             }
 
             curScore.endCmd()
+            console.log("Applied fingerings to", count, "notes")
+            console.log("=== Done ===")
             return true
       }
+
 
       function getFirstNoteName() {
             for (var note in fingeringDict) {
@@ -287,9 +313,17 @@ MuseScore {
       function setUserFontSize(size) {
             var oldSize = userFontSize
             getHistory().add(
-                  function() { userFontSize = oldSize },
-                             function() { userFontSize = size; fontSizeSpin.value = size },
-                             "font size"
+                  function() {
+                        userFontSize = oldSize
+                        fontSizeField.text = oldSize
+                        previewLabel.font.pointSize = oldSize
+                  },
+                  function() {
+                        userFontSize = size
+                        fontSizeField.text = size
+                        previewLabel.font.pointSize = size
+                  },
+                  "font size"
             )
       }
 
@@ -305,18 +339,30 @@ MuseScore {
       function setUserOffsetY(offset) {
             var oldOffset = userOffsetY
             getHistory().add(
-                  function() { userOffsetY = oldOffset; offsetSpin.value = oldOffset * 10 },
-                             function() { userOffsetY = offset; offsetSpin.value = offset * 10 },
-                             "vertical offset"
+                  function() {
+                        userOffsetY = oldOffset
+                        offsetField.text = oldOffset.toFixed(1)
+                  },
+                  function() {
+                        userOffsetY = offset
+                        offsetField.text = offset.toFixed(1)
+                  },
+                  "vertical offset"
             )
       }
 
       function setUserLineSpacing(spacing) {
             var oldSpacing = userLineSpacing
             getHistory().add(
-                  function() { userLineSpacing = oldSpacing; spacingSpin.value = oldSpacing * 10 },
-                             function() { userLineSpacing = spacing; spacingSpin.value = spacing * 10 },
-                             "line spacing"
+                  function() {
+                        userLineSpacing = oldSpacing
+                        spacingField.text = oldSpacing.toFixed(1)
+                  },
+                  function() {
+                        userLineSpacing = spacing
+                        spacingField.text = spacing.toFixed(1)
+                  },
+                  "line spacing"
             )
       }
 
@@ -345,10 +391,10 @@ MuseScore {
             getHistory().end()
       }
 
-      function fontSizeChanged() {
+      function fontSizeChanged(size) {
             getHistory().begin()
             setModified(true)
-            setUserFontSize(fontSizeSpin.value)
+            setUserFontSize(size)
             updatePreview()
             getHistory().end()
       }
@@ -415,6 +461,7 @@ MuseScore {
                   SystemPalette { id: sysPal }
 
                   // TOP ROW - Text Formatting Options
+                  // TOP ROW - Text Formatting Options
                   GroupBox {
                         title: "Text Formatting"
                         Layout.fillWidth: true
@@ -449,7 +496,7 @@ MuseScore {
                                     color: sysPal.text
                                     selectionColor: sysPal.highlight
                                     selectedTextColor: sysPal.highlightedText
-                                    validator: IntValidator { bottom: 6; top: 72 }
+                                    validator: IntValidator { bottom: 1; top: 72 }
                                     background: Rectangle {
                                           color: sysPal.window
                                           border.color: sysPal.mid
@@ -458,7 +505,7 @@ MuseScore {
                                     // Handle Enter key press
                                     onAccepted: {
                                           var newValue = parseInt(text)
-                                          if (!isNaN(newValue) && newValue >= 6 && newValue <= 72) {
+                                          if (!isNaN(newValue) && newValue >= 1 && newValue <= 72) {
                                                 if (newValue !== userFontSize) {
                                                       fontSizeChanged(newValue)
                                                 }
@@ -471,7 +518,7 @@ MuseScore {
                                     onActiveFocusChanged: {
                                           if (!activeFocus) {
                                                 var newValue = parseInt(text)
-                                                if (!isNaN(newValue) && newValue >= 6 && newValue <= 72) {
+                                                if (!isNaN(newValue) && newValue >= 1 && newValue <= 72) {
                                                       if (newValue !== userFontSize) {
                                                             fontSizeChanged(newValue)
                                                       }
@@ -484,12 +531,13 @@ MuseScore {
                                     // Update preview in real-time as user types
                                     onTextChanged: {
                                           var newValue = parseInt(text)
-                                          if (!isNaN(newValue) && newValue >= 6 && newValue <= 72) {
+                                          if (!isNaN(newValue) && newValue >= 1 && newValue <= 72) {
                                                 // Temporarily update preview without committing to history
                                                 previewLabel.font.pointSize = newValue
                                           }
                                     }
                               }
+
                               Label {
                                     text: "Justification:"
                                     color: sysPal.windowText
@@ -500,7 +548,10 @@ MuseScore {
                                     Layout.preferredWidth: 120
                                     model: ["Left", "Center", "Right"]
                                     currentIndex: userJustification
-                                    onActivated: justificationChanged()
+                                    onActivated: {
+                                          justificationChanged()
+                                          updatePreview()
+                                    }
                                     contentItem: Text {
                                           text: justCombo.displayText
                                           color: sysPal.windowText
@@ -536,9 +587,10 @@ MuseScore {
 
                                     onAccepted: {
                                           var newValue = parseFloat(text)
-                                          if (!isNaN(newValue) && newValue >= -20.0 && newValue <= 20.0) {
+                                          if (!isNaN(newValue) && newValue >= -200.0 && newValue <= 200.0) {
                                                 if (newValue !== userOffsetY) {
                                                       offsetYChanged(newValue)
+                                                      updatePreview()
                                                 }
                                           } else {
                                                 text = userOffsetY.toFixed(1)
@@ -548,17 +600,16 @@ MuseScore {
                                     onActiveFocusChanged: {
                                           if (!activeFocus) {
                                                 var newValue = parseFloat(text)
-                                                if (!isNaN(newValue) && newValue >= -20.0 && newValue <= 20.0) {
+                                                if (!isNaN(newValue) && newValue >= -200.0 && newValue <= 200.0) {
                                                       if (newValue !== userOffsetY) {
                                                             offsetYChanged(newValue)
+                                                            updatePreview()
                                                       }
                                                 } else {
                                                       text = userOffsetY.toFixed(1)
                                                 }
                                           }
                                     }
-
-                                    // Offset doesn't affect preview content, so no onTextChanged needed
                               }
 
                               Label {
@@ -574,7 +625,7 @@ MuseScore {
                                     color: sysPal.text
                                     selectionColor: sysPal.highlight
                                     selectedTextColor: sysPal.highlightedText
-                                    validator: DoubleValidator { bottom: 0.5; top: 3.0; decimals: 1 }
+                                    validator: DoubleValidator { bottom: 0; top: 6; decimals: 1 }
                                     background: Rectangle {
                                           color: sysPal.window
                                           border.color: sysPal.mid
@@ -582,9 +633,10 @@ MuseScore {
 
                                     onAccepted: {
                                           var newValue = parseFloat(text)
-                                          if (!isNaN(newValue) && newValue >= 0.5 && newValue <= 3.0) {
+                                          if (!isNaN(newValue) && newValue >= 0 && newValue <= 6) {
                                                 if (newValue !== userLineSpacing) {
                                                       lineSpacingChanged(newValue)
+                                                      updatePreview()
                                                 }
                                           } else {
                                                 text = userLineSpacing.toFixed(1)
@@ -594,17 +646,16 @@ MuseScore {
                                     onActiveFocusChanged: {
                                           if (!activeFocus) {
                                                 var newValue = parseFloat(text)
-                                                if (!isNaN(newValue) && newValue >= 0.5 && newValue <= 3.0) {
+                                                if (!isNaN(newValue) && newValue >= 0 && newValue <= 6.0) {
                                                       if (newValue !== userLineSpacing) {
                                                             lineSpacingChanged(newValue)
+                                                            updatePreview()
                                                       }
                                                 } else {
                                                       text = userLineSpacing.toFixed(1)
                                                 }
                                           }
                                     }
-
-                                    // Line spacing doesn't affect preview content, so no onTextChanged needed
                               }
                         }
                   }
@@ -807,6 +858,8 @@ MuseScore {
                                                 color: sysPal.windowText
                                                 wrapMode: Text.WordWrap
                                                 width: parent.width
+                                                lineHeight: userLineSpacing
+                                                lineHeightMode: Text.ProportionalHeight
                                           }
                                     }
                               }
