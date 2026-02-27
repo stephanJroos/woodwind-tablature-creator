@@ -45,16 +45,16 @@ MuseScore {
       // USER SETTINGS (& defaults)
       //---------------------------------------------------------
 
-      property int userFontSize: 5
+      property int userFontSize: 7
       property int userJustification: 1   // 0=left,1=center,2=right
       property real userOffsetY: 1.2
-      property real userLineSpacing: 0.8
+      property real userLineSpacing: 0.6
       property string userFormatString: "$1    \n$2\n$3\n$4\n$5\n$6\n$7\n$8\n$9\n$+"
 
-      property int defaultFontSize: 5
+      property int defaultFontSize: 7
       property int defaultJustification: 1
       property real defaultOffsetY: 1.2
-      property real defaultLineSpacing: 0.8
+      property real defaultLineSpacing: 0.6
       property string defaultFormatString: "$1    \n$2\n$3\n$4\n$5\n$6\n$7\n$8\n$9\n$+"
 
       // For undo/redo
@@ -251,14 +251,25 @@ MuseScore {
                                     return "Invalid Fingering Pattern Value. Must be one of 0,1,2"
                         }
 
-                        if (plusBit !== "0" && plusBit !== "1")
-                              return "Invalid Plus Bit"
-
+                        var plusInt = parseInt(plusBit)
+                        if (isNaN(plusInt) || plusInt < 0 || plusInt.toString() !== plusBit) {
+                              return "Invalid Plus Bit: must be a positive integer (0, 1, 2, ...)"
+                        }
                               //-------------------------------------------------
                               // Clone format string
                               //-------------------------------------------------
 
                               var output = formatString
+
+                              //-------------------------------------------------
+                              // Replace note placeholder ($note) with note name
+                              //-------------------------------------------------
+
+                              if (noteName) {
+                                    while (output.indexOf("$note") !== -1) {
+                                          output = output.replace("$note", noteName)
+                                    }
+                              }
 
                               //-------------------------------------------------
                               // Replace numbered placeholders ($1 … $N)
@@ -881,7 +892,7 @@ MuseScore {
                                     }
 
                                     Label {
-                                          text: "Use placeholders like $1, $2, ... and $+ for the plus indicator"
+                                          text: "Use placeholders like $1, $2, ..., $+ for the plus indicator and $note for the note (e.g. G#5)"
                                           font.pixelSize: 10
                                           color: sysPal.windowText
                                     }
