@@ -202,7 +202,7 @@ MuseScore {
                         "D6": "2222222",
                   },
                   formatString: "$1\n$2\n$3\n\n$4\n$5\n$6\n$+\n\n$note"
-            }
+            },
             {
                   "name": "C Whistle (6 holes)",
                   "fingeringDict": {
