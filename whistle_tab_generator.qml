@@ -49,13 +49,13 @@ MuseScore {
       property int userJustification: 1   // 0=left,1=center,2=right
       property real userOffsetY: 1.2
       property real userLineSpacing: 0.6
-      property string userFormatString: "$1    \n$2\n$3\n$4\n$5\n$6\n$7\n$8\n$9\n$+"
+      property string userFormatString: "$1    \n$2\n$3\n$4\n$5\n\n$6\n$7\n$8\n$9\n$+\n$note"
 
       property int defaultFontSize: 8
       property int defaultJustification: 1
       property real defaultOffsetY: 1.2
       property real defaultLineSpacing: 0.6
-      property string defaultFormatString: "$1    \n$2\n$3\n$4\n$5\n$6\n$7\n$8\n$9\n$+"
+      property string defaultFormatString: "$1    \n$2\n$3\n$4\n$5\n\n$6\n$7\n$8\n$9\n$+\n$note"
 
       // For undo/redo
       property var history: 0
@@ -68,6 +68,31 @@ MuseScore {
 
       //Dictionary for your whistle, specifying the note and the fingering pattern (left-> right, starting from the fipple end).
       //2 indicates a closed hole, 1 indicates a half hole, 0 indicates open hole. The last digit is a reserved section indicating how many plusses (+) should be drawn to signal overblowing.
+
+//      ○ = 0
+//      ◐ = 1
+//      ● = 2
+
+      //Example fingering specification for high D whistle overblowing one octave to G6
+//            |---------------------------------------------
+//windway ->  | | |             ●  ●  ●    ○  ○  ○         |
+//            |---------------------------------------------
+//                "G6":   "     2  2  2    0  0  0  1 " <- last bit indicates number of +'s to add (i.e. how many times to overblow). Can be >= 0
+
+
+//Example fingering specification for G#5 on a high D whistle
+//            |---------------------------------------------
+//windway ->  | | |             ●  ●  ◐    ○  ○  ○         |
+//            |---------------------------------------------
+//                 "G#5": "     2  2  1    0  0  0  0 " <- overblow bit set to zero to indicate first octave
+//                              |  |  |    |  |  |  |
+// variables in format string: $1 $2 $3   $4 $5 $6 $+   and then $note would be replaced with 'G#5'
+
+
+//Can have any number of holes in the specification, but the formatting string must consume all hole variables
+
+property var fingeringDict: ({//Fingering dictionary for custom chromatic whistle in the key of
+
       property var fingeringDict: ({//Fingering dictionary for custom chromatic whistle in the key of
             "G4": "2222222220",      // G4
             "G#4": "2222222200",     // G#4 / Ab4
