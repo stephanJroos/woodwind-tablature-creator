@@ -23,6 +23,9 @@ This plugin offers several predefined whistles as well as custom alternative woo
 The plugin also remembers settings, responds to dark and light mode themes, supports undo and redo, and provides a live preview of note fingering with the selected settings.
 
 ---
+<p align="center">
+  <img src="imgs/Example_Tab_F.png" alt="GUI, dark mode" width="600">
+</p>
 
 This plugin was inspired by the [tin-whistle-tablature project](https://github.com/jgadsden/tin-whistle-tablature/tree/main), which has the notable advantage of reducing diagram size for short notes. This project also offers several additional advantages:
 
@@ -49,19 +52,26 @@ This plugin was inspired by the [tin-whistle-tablature project](https://github.c
 
 Opening the plugin presents the configuration window:
 
-![GUI of woodwind generator in light mode](imgs/GUI_LowD_Light.png "GUI, light mode")
-![GUI of woodwind generator in dark mode](imgs/GUI_Ocarina_Dark.png "GUI, dark mode")
+<div style="display: flex; gap: 16px;">
+  <figure>
+    <img src="imgs/GUI_LowD_Light.png" alt="GUI, light mode" width="400">
+    <figcaption><em>Light mode</em></figcaption>
+  </figure>
+  <figure>
+    <img src="imgs/GUI_Ocarina_Dark.png" alt="GUI, dark mode" width="400">
+    <figcaption><em>Dark mode</em></figcaption>
+  </figure>
+</div>
 
 From here you can select a woodwind definition, customize settings or the format string, and apply to generate the tab.
 
 **Examples:**
 
-Low D Whistle:
-![Example Tab Generated for the Low D whistle](imgs/Example_Tab_LowD.png "Low D")
+>![Example Tab Generated for the Low D whistle](imgs/Example_Tab_LowD.png "Low D")
+*Low D Whistle*
 
-Alto C Ocarina:
-![Example Tab Generated for the Ocarina](imgs/Example_Tab_Ocarina.png "Ocarina")
-
+>![Example Tab Generated for the Ocarina](imgs/Example_Tab_Ocarina.png "Ocarina")
+*Alto C Ocarina*
 ---
 
 ## Adding Your Own Woodwinds
@@ -87,6 +97,7 @@ Alto C Ocarina:
 **Tip for complex layouts (e.g. Ocarina):** Use a temporary template in the format string field, open the plugin, and adjust the layout using the preview as a guide. Then copy the format string (including whitespace) into a text editor and replace literal newlines (`\n`) with `\\n` — you may need to enable regex replace in your editor. See the Ocarina definition for an example of a more complex layout.
 
 ![Visual guide for specifying a woodwind fingering diagram entry](imgs/Whistle%20Specification.jpg "Example Instrument Entry")
+*Example instrument entry*
 
 If you'd prefer, you can also open an issue with a clear description of your instrument and fingering patterns and I can add it for you.
 
@@ -95,7 +106,7 @@ If you'd prefer, you can also open an issue with a clear description of your ins
 ## Troubleshooting
 
 >#### My tab symbols are smaller after saving and reloading the project
-This plugin loads its own font to ensure symbols render at the correct size. However, since the font isn't loaded until the plugin starts, MuseScore may fall back to a default font on reload.
+This plugin loads its own font to ensure that all three symbols render at a constant size. However, since the font isn't loaded until the plugin starts, MuseScore may fall back to a default font on reload.
 
 To fix this, either:
 - Re-insert the tab using the plugin, or
@@ -107,3 +118,10 @@ To fix this, either:
 This means the note couldn't be found in your instrument definition — i.e. it cannot be played on your instrument.
 
 Try transposing the music. If you are using an instrument like a whistle where the notation is written an octave lower than it sounds, check the **Transposed** box in the plugin settings.
+
+
+---
+
+## Feedback
+
+Did you find this plugin useful? Found a bug, or have a feature request? Feel free to [open an issue](../../issues) or leave a star :)
