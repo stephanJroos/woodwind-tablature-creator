@@ -27,7 +27,7 @@ import MuseScore 3.0
 
 MuseScore {
       id: mscore
-      version: "4.1"
+      version: "4.2"
       title: "ASCII Whistle Fingering"
       description: "Inserts ASCII fingering diagrams using binary dictionary"
       pluginType: "dialog"
@@ -73,6 +73,7 @@ MuseScore {
       property real defaultOffsetY: 1.2
       property real defaultLineSpacing: 0.8
       property string defaultFontFamily: "Menlo, Consolas, Liberation Mono, Courier New, monospace"
+
 
       // For undo/redo
       property var history: 0
@@ -467,7 +468,7 @@ MuseScore {
       }
 
       //---------------------------------------------------------
-      // MIDI → NOTE NAME
+      // MIDI -> Note Name
       //---------------------------------------------------------
 
       function pitchToName(midiPitch) {
@@ -534,11 +535,11 @@ MuseScore {
                                for (var i = 0; i < holeCount; i++) {
                               var symbol
                               if (binaryString[i] === "2")
-                                    symbol = String.fromCharCode(0xE001)  // Closed hole - custom font
+                                    symbol = String.fromCharCode(0x25CF)  // Closed hole - custom font
                                     else if (binaryString[i] === "1")
-                                          symbol = String.fromCharCode(0xE002)  // Half hole - custom font
+                                          symbol = String.fromCharCode(0x25D0)  // Half hole - custom font
                                           else
-                                                symbol = String.fromCharCode(0xE000) // Open Hole - custom font
+                                                symbol = String.fromCharCode(0x25CB) // Open Hole - custom font
 
                                                 var token = "$" + (i+1)
                                                 while (output.indexOf(token) !== -1) {
@@ -625,9 +626,9 @@ MuseScore {
                                           // Check if this annotation belongs to the same track
                                           if (annotation.track === track && annotation.type === Element.STAFF_TEXT) {
                                                 var text = annotation.text
-                                                if (text && (text.indexOf(String.fromCharCode(0xE001)) !== -1 ||  // Closed hole - custom font
-                                                      text.indexOf(String.fromCharCode(0xE002)) !== -1 || // Half hole - custom font
-                                                      text.indexOf(String.fromCharCode(0xE000)) !== -1 || // Open hole - custom font
+                                                if (text && (text.indexOf(String.fromCharCode(0x25CF)) !== -1 ||  // Closed hole - custom font
+                                                      text.indexOf(String.fromCharCode(0x25D0)) !== -1 || // Half hole - custom font
+                                                      text.indexOf(String.fromCharCode(0x25CB)) !== -1 || // Open hole - custom font
                                                       text.indexOf("☒") !== -1)) {
                                                       return true
                                                       }
@@ -671,9 +672,9 @@ MuseScore {
                                           // Check if this annotation belongs to the same track
                                           if (annotation.track === track && annotation.type === Element.STAFF_TEXT) {
                                                 var text = annotation.text
-                                                if (text && (text.indexOf(String.fromCharCode(0xE001)) !== -1 || //Closed hole symbol
-                                                      text.indexOf(String.fromCharCode(0xE002)) !== -1 || // Half hole - custom font
-                                                      text.indexOf(String.fromCharCode(0xE000)) !== -1 || // Open Hole
+                                                if (text && (text.indexOf(String.fromCharCode(0x25CF)) !== -1 || //Closed hole symbol
+                                                      text.indexOf(String.fromCharCode(0x25D0)) !== -1 || // Half hole - custom font
+                                                      text.indexOf(String.fromCharCode(0x25CB)) !== -1 || // Open Hole
                                                       text.indexOf("☒") !== -1)) {
                                                       removeElement(annotation)
                                                       removed++
@@ -786,10 +787,17 @@ MuseScore {
             return "No preview available"
       }
 
+      //Estimate offset for preview font size to match what will appear on staff at 100% zoom
+      function computePreviewOffset() {
+            var dpiScale = 96 / 72   // MuseScore vs Qt DPI convention
+            return Math.round(userFontSize * Screen.devicePixelRatio * dpiScale) - userFontSize
+      }
+
+      //Font definition for preview symbols. Does not support multiple fonts, so only use the whistle font
       function getPreviewFont(){
             var baseFont = Qt.font({
                   family: "WhistleSymbols",
-                  pointSize: userFontSize
+                  pointSize: Math.max(1, userFontSize + computePreviewOffset()) //offset font size to match visual size on staff
             })
 
             // Split userFontFamily string into array and flatten with whistle font
@@ -807,8 +815,11 @@ MuseScore {
       }
 
 
+
       function updatePreview() {
-            previewLabel.text = getPreviewText()
+            //Replace whitespaces with non-breaking whitespace, as the label field ignores
+            //whitespaces when justifying, making the preview inaccurate otherwise.
+            previewLabel.text = getPreviewText().replace(/ /g, "\u00A0")
       }
 
       //---------------------------------------------------------
@@ -821,12 +832,12 @@ MuseScore {
                   function() {
                         userFontSize = oldSize
                         fontSizeField.text = oldSize
-                        previewLabel.font.pointSize = oldSize
+                        previewLabel.font.pointSize = Math.max(1, oldSize + computePreviewOffset())
                   },
                   function() {
                         userFontSize = size
                         fontSizeField.text = size
-                        previewLabel.font.pointSize = size
+                        previewLabel.font.pointSize = Math.max(1, size + computePreviewOffset())
                   },
                   "font size"
             )
@@ -1012,13 +1023,13 @@ MuseScore {
                               Layout.fillWidth: true
                               Layout.columnSpan: 2
                               background: Rectangle {
-                                    color: sysPal.window
-                                    border.color: sysPal.mid
+                                    color: backgroundColor
+                                    border.color: textColor
                               }
                               label: Label {
                                     text: parent.title
-                                    color: sysPal.windowText
-                                    background: Rectangle { color: sysPal.window }
+                                    color: textColor
+                                    background: Rectangle { color: backgroundColor }
                               }
 
                               RowLayout {
@@ -1028,7 +1039,7 @@ MuseScore {
 
                                     Label {
                                           text: "Select whistle:"
-                                          color: sysPal.windowText
+                                          color: textColor
                                     }
                                     ComboBox {
                                           id: profileCombo
@@ -1040,15 +1051,15 @@ MuseScore {
                                           }
                                           contentItem: Text {
                                                 text: profileCombo.displayText
-                                                color: sysPal.windowText
+                                                color: textColor
                                                 font: profileCombo.font
                                                 horizontalAlignment: Text.AlignLeft
                                                 verticalAlignment: Text.AlignVCenter
                                                 elide: Text.ElideRight
                                           }
                                           background: Rectangle {
-                                                color: sysPal.window
-                                                border.color: sysPal.mid
+                                                color: backgroundColor
+                                                border.color: textColor
                                           }
                                     }
                                     Item {
@@ -1065,13 +1076,13 @@ MuseScore {
                               Layout.preferredWidth: 600
                               Layout.columnSpan: 2
                               background: Rectangle {
-                                    color: sysPal.window
-                                    border.color: sysPal.mid
+                                    color: backgroundColor
+                                    border.color: textColor
                               }
                               label: Label {
                                     text: parent.title
-                                    color: sysPal.windowText
-                                    background: Rectangle { color: sysPal.window }
+                                    color: textColor
+                                    background: Rectangle { color: backgroundColor }
                               }
 
                               GridLayout {
@@ -1083,7 +1094,7 @@ MuseScore {
 
                                     Label {
                                           text: "Font Size:"
-                                          color: sysPal.windowText
+                                          color: textColor
                                           Layout.alignment: Qt.AlignRight
                                     }
                                     TextField {
@@ -1095,8 +1106,8 @@ MuseScore {
                                           selectedTextColor: sysPal.highlightedText
                                           validator: IntValidator { bottom: 1; top: 999 }
                                           background: Rectangle {
-                                                color: sysPal.window
-                                                border.color: sysPal.mid
+                                                color: backgroundColor
+                                                border.color: textColor
                                           }
 
                                           onAccepted: {
@@ -1126,14 +1137,14 @@ MuseScore {
                                           onTextChanged: {
                                                 var newValue = parseInt(text)
                                                 if (!isNaN(newValue) && newValue >= 1 && newValue <= 999) {
-                                                      previewLabel.font.pointSize = newValue
+                                                      previewLabel.font.pointSize = Math.max(1, newValue + computePreviewOffset())
                                                 }
                                           }
                                     }
 
                                     Label {
                                           text: "Justification:"
-                                          color: sysPal.windowText
+                                          color: textColor
                                           Layout.alignment: Qt.AlignRight
                                     }
                                     ComboBox {
@@ -1147,21 +1158,21 @@ MuseScore {
                                           }
                                           contentItem: Text {
                                                 text: justCombo.displayText
-                                                color: sysPal.windowText
+                                                color: textColor
                                                 font: justCombo.font
                                                 horizontalAlignment: Text.AlignLeft
                                                 verticalAlignment: Text.AlignVCenter
                                                 elide: Text.ElideRight
                                           }
                                           background: Rectangle {
-                                                color: sysPal.window
-                                                border.color: sysPal.mid
+                                                color: backgroundColor
+                                                border.color: textColor
                                           }
                                     }
 
                                     Label {
                                           text: "Vertical Offset:"
-                                          color: sysPal.windowText
+                                          color: textColor
                                           Layout.alignment: Qt.AlignRight
                                     }
                                     TextField {
@@ -1173,8 +1184,8 @@ MuseScore {
                                           selectedTextColor: sysPal.highlightedText
                                           validator: DoubleValidator { bottom: -999.0; top: 999.0; decimals: 1 }
                                           background: Rectangle {
-                                                color: sysPal.window
-                                                border.color: sysPal.mid
+                                                color: backgroundColor
+                                                border.color: textColor
                                           }
 
                                           onAccepted: {
@@ -1205,7 +1216,7 @@ MuseScore {
                                     }
                                     Label {
                                           text: "Font Family:"
-                                          color: sysPal.windowText
+                                          color: textColor
                                           Layout.alignment: Qt.AlignRight
                                     }
                                     TextField {
@@ -1217,8 +1228,8 @@ MuseScore {
                                           selectionColor: sysPal.highlight
                                           selectedTextColor: sysPal.highlightedText
                                           background: Rectangle {
-                                                color: sysPal.window
-                                                border.color: sysPal.mid
+                                                color: backgroundColor
+                                                border.color: textColor
                                           }
                                           onAccepted: {
                                                 if (text !== userFontFamily) {
@@ -1233,7 +1244,7 @@ MuseScore {
 
                                     Label {
                                           text: "Line Spacing:"
-                                          color: sysPal.windowText
+                                          color: textColor
                                           Layout.alignment: Qt.AlignRight
                                     }
                                     TextField {
@@ -1245,8 +1256,8 @@ MuseScore {
                                           selectedTextColor: sysPal.highlightedText
                                           validator: DoubleValidator { bottom: 0; top: 6; decimals: 1 }
                                           background: Rectangle {
-                                                color: sysPal.window
-                                                border.color: sysPal.mid
+                                                color: backgroundColor
+                                                border.color: textColor
                                           }
 
                                           onAccepted: {
@@ -1301,7 +1312,7 @@ MuseScore {
                                     }
                                     background: Rectangle {
                                           color: sysPal.button
-                                          border.color: sysPal.mid
+                                          border.color: textColor
                                     }
                                     onClicked: {
                                           resetToDefaults()
@@ -1315,13 +1326,13 @@ MuseScore {
                               Layout.fillWidth: true
                               Layout.columnSpan: 2
                               background: Rectangle {
-                                    color: sysPal.window
-                                    border.color: sysPal.mid
+                                    color: backgroundColor
+                                    border.color: textColor
                               }
                               label: Label {
                                     text: parent.title
-                                    color: sysPal.windowText
-                                    background: Rectangle { color: sysPal.window }
+                                    color: textColor
+                                    background: Rectangle { color: backgroundColor }
                               }
 
                               RowLayout {
@@ -1337,7 +1348,7 @@ MuseScore {
 
                                           Label {
                                                 text: "Format String:"
-                                                color: sysPal.windowText
+                                                color: textColor
                                                 font.bold: true
                                           }
 
@@ -1347,8 +1358,8 @@ MuseScore {
                                                 Layout.preferredHeight: 200
                                                 clip: true
                                                 background: Rectangle {
-                                                      color: sysPal.window
-                                                      border.color: sysPal.mid
+                                                      color: backgroundColor
+                                                      border.color: textColor
                                                 }
 
                                                 TextArea {
@@ -1361,8 +1372,8 @@ MuseScore {
                                                       selectionColor: sysPal.highlight
                                                       selectedTextColor: sysPal.highlightedText
                                                       background: Rectangle {
-                                                            color: sysPal.window
-                                                            border.color: sysPal.mid
+                                                            color: backgroundColor
+                                                            border.color: textColor
                                                       }
                                                       property var previousText: userFormatString
                                                       onEditingFinished: {
@@ -1378,23 +1389,23 @@ MuseScore {
                                           Label {
                                                 text: "Use placeholders like $1, $2, ..., for the holes, \n$+ for the plus indicator and $note for the note (e.g. G#5)"
                                                 font.pixelSize: 10
-                                                color: sysPal.windowText
+                                                color: textColor
                                           }
                                     }
 
                                     // Preview Area (right side)
                                     GroupBox {
-                                          title: "Preview"
+                                          title: "Preview (@100%)"
                                           Layout.preferredWidth: 120
                                           Layout.fillHeight: true
                                           background: Rectangle {
-                                                color: sysPal.window
-                                                border.color: sysPal.mid
+                                                color: backgroundColor
+                                                border.color: textColor
                                           }
                                           label: Label {
                                                 text: parent.title
-                                                color: sysPal.windowText
-                                                background: Rectangle { color: sysPal.window }
+                                                color: textColor
+                                                background: Rectangle { color: backgroundColor }
                                           }
 
                                           ScrollView {
@@ -1402,8 +1413,8 @@ MuseScore {
                                                 anchors.margins: 5
                                                 clip: true
                                                 background: Rectangle {
-                                                      color: sysPal.window
-                                                      border.color: sysPal.mid
+                                                      color: backgroundColor
+                                                      border.color: textColor
                                                 }
 
                                                 Label {
@@ -1411,8 +1422,8 @@ MuseScore {
                                                       text: getPreviewText()
                                                       //font.family: getFontStack()
                                                       //font.pointSize: userFontSize
-                                                      color: sysPal.windowText
-                                                      wrapMode: Text.WordWrap
+                                                      color: textColor
+                                                      wrapMode: Text.NoWrap
                                                       width: parent.width
                                                       lineHeight: userLineSpacing
                                                       lineHeightMode: Text.ProportionalHeight
@@ -1448,7 +1459,7 @@ MuseScore {
                                     }
                                     background: Rectangle {
                                           color: sysPal.button
-                                          border.color: sysPal.mid
+                                          border.color: textColor
                                     }
                                     onClicked: {
                                           if (hasExistingAnnotations()) {
@@ -1471,7 +1482,7 @@ MuseScore {
                                     }
                                     background: Rectangle {
                                           color: sysPal.button
-                                          border.color: sysPal.mid
+                                          border.color: textColor
                                     }
                                     onClicked: {
                                           quit()
