@@ -32,7 +32,7 @@ import MuseScore 3.0
 MuseScore {
       id: mscore
       version: "4.3"
-      title: "ASCII Whistle Tabs"
+      title: "ASCII Woodwind Fingering Tabs"
       description: "Inserts ASCII fingering diagrams using numerical dictionary"
       pluginType: "dialog"
       categoryCode: "composing-arranging-tools"
@@ -88,7 +88,7 @@ MuseScore {
       // Last bit = plus sign indicator
       //---------------------------------------------------------
 
-      //Dictionary for your whistle, specifying the note and the fingering pattern (left-> right, starting from the fipple end).
+      //Dictionary for your woodwind's fingerings, specifying the note and the fingering pattern (for whistles: left-> right, starting from the fipple end).
       //NOTE: Note specification convention here uses sharps, so e.g. a Bb whistle needs to be defined as A#
       //2 indicates a closed hole, 1 indicates a half hole, 0 indicates open hole. The last digit is a reserved section indicating how many plusses (+) should be drawn to signal overblowing.
 
@@ -395,6 +395,37 @@ MuseScore {
                         "D7": "2222222",
                   },
                   formatString: "$1\n$2\n$3\n\n$4\n$5\n$6\n$+\n\n$note"
+            },
+            {
+                  // OCARINA. from hole 1 to 12 they are:
+                  //$1 LThumb, $2 Lindex, $3 LMiddle, $4 Lring, $5 LPinky $6 LSubhole ->
+                  // -> $7 RThumb, $8 RIndex, $9 RMiddle, $10 RRing, $11 RPinky, $12 RSubhole
+                  //Requires centered text
+                   name: "Alto C Ocarina [A4-F6] (12 hole)",
+                   "fingeringDict": {
+                         "A4":  "2222222222220",
+                         "A#4": "2222222222200",
+                         "B4":  "2222202222020",
+                         "C5":  "2222202222200",
+                         "C#5": "2222202222020",
+                         "D5":  "2222202222000",
+                         "D#5": "2222202220020",
+                         "E5":  "2222202220000",
+                         "F5":  "2222202200000",
+                         "F#5": "2222202002000",
+                         "G5":  "2222202000000",
+                         "G#5": "2220202002000",
+                         "A5":  "2220202000000",
+                         "A#5": "2200202002000",
+                         "B5":  "2200202000000",
+                         "C6":  "2000202000000",
+                         "C#6": "0000202002000",
+                         "D6":  "0000202000000",
+                         "D#6": "0000200002000",
+                         "E6":  "0000200000000",
+                         "F6":  "0000000000000"
+                   },
+                   formatString: "        $11\n   $5   $10\n  $4 $12$9\n $3  $8\n   $2$6     \n\n $1  $7\n$note"
             }
       ]
 
@@ -689,7 +720,7 @@ MuseScore {
                               // Replace note placeholder ($note) with note name
                               //-------------------------------------------------
 
-                              if (noteName) {
+                        if (noteName) {
                               while (output.indexOf("$note") !== -1) {
                                     output = output.replace("$note", noteName)
                               }
@@ -699,7 +730,7 @@ MuseScore {
                               // Replace numbered placeholders ($1 … $N)
                               //-------------------------------------------------
 
-                               for (var i = 0; i < holeCount; i++) {
+                        for (var i = holeCount - 1; i >= 0; i--) {
                               var symbol
                               if (binaryString[i] === "2")
                                     symbol = String.fromCharCode(0x25CF)  // Closed hole - custom font
@@ -708,10 +739,10 @@ MuseScore {
                                           else
                                                 symbol = String.fromCharCode(0x25CB) // Open Hole - custom font
 
-                                                var token = "$" + (i+1)
-                                                while (output.indexOf(token) !== -1) {
-                                                      output = output.replace(token, symbol)
-                                                }
+                              var token = "$" + (i+1)
+                              while (output.indexOf(token) !== -1) {
+                                    output = output.replace(token, symbol)
+                              }
                         }
 
                         var plusCount = parseInt(plusBit)
