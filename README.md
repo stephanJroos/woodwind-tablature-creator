@@ -100,6 +100,8 @@ From here you can select a woodwind definition, customize settings or the format
 ![Visual guide for specifying a woodwind fingering diagram entry](imgs/Whistle%20Specification.jpg "Example Instrument Entry")
 *Example instrument entry*
 
+3. Reset the plugin settings to refresh the woodwind profiles
+
 If you'd prefer, you can also open an issue with a clear description of your instrument and fingering patterns and I can add it for you.
 
 ---
