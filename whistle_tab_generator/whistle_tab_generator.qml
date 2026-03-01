@@ -60,18 +60,18 @@ MuseScore {
       // USER SETTINGS (& defaults)
       //---------------------------------------------------------
 
-      property int userFontSize: 8
+      property int userFontSize: 6
       property int userJustification: 1   // 0=left,1=center,2=right
       property real userOffsetY: 1.2
-      property real userLineSpacing: 0.8
+      property real userLineSpacing: 0.7
       property string userFormatString: ""   // mirrors current profile's formatString
       property string userFontFamily: "Menlo, Consolas, Liberation Mono, Courier New, monospace"
 
 
-      property int defaultFontSize: 8
+      property int defaultFontSize: 6
       property int defaultJustification: 1
       property real defaultOffsetY: 1.2
-      property real defaultLineSpacing: 0.8
+      property real defaultLineSpacing: 0.7
       property string defaultFontFamily: "Menlo, Consolas, Liberation Mono, Courier New, monospace"
 
 
@@ -85,6 +85,7 @@ MuseScore {
       //---------------------------------------------------------
 
       //Dictionary for your whistle, specifying the note and the fingering pattern (left-> right, starting from the fipple end).
+      //NOTE: Note specification convention here uses sharps, so e.g. a Bb whistle needs to be defined as A#
       //2 indicates a closed hole, 1 indicates a half hole, 0 indicates open hole. The last digit is a reserved section indicating how many plusses (+) should be drawn to signal overblowing.
 
 //      ○ = 0
@@ -109,10 +110,131 @@ MuseScore {
 
 //Can have any number of holes in the specification, but the formatting string must consume all hole variables
 
-         // Hardcoded default profiles
+      //Whistle definitions
       property var defaultProfiles: [
             {
-                  name: "Custom Chromatic G Whistle (9 holes)",
+                  name: "Low D Whistle [D4-D6] (Prefer half-holing)",
+                  fingeringDict: {
+                        "D4": "2222220",
+                        "D#4": "2222210",
+                        "E4": "2222200",
+                        "F4": "2222100",
+                        "F#4": "2222000",
+                        "G4": "2220000",
+                        "G#4": "2210000",
+                        "A4": "2200000",
+                        "A#4": "2100000",
+                        "B4": "2000000",
+                        "C5": "0220000",
+                        "C#5": "0000000",
+                        "D5": "0222221",
+                        "D#5": "2222211",
+                        "E5": "2222201",
+                        "F5": "2222101",
+                        "F#5": "2222001",
+                        "G5": "2220001",
+                        "G#5": "2210001",
+                        "A5": "2200001",
+                        "A#5": "2100001",
+                        "B5": "2000001",
+                        "C6": "0202221",
+                        "C#6": "0000001",
+                        "D6": "2222222",
+                  },
+                  formatString: "$1\n$2\n$3\n\n$4\n$5\n$6\n$+\n\n$note"
+            },
+            {
+                  "name": "Eb Whistle [Eb-D6] (Prefer haf-holing)",
+                  "fingeringDict": {
+                        "D#4": "2222220",
+                        "E4":  "2222210",
+                        "F4":  "2222200",
+                        "F#4": "2222100",
+                        "G4":  "2222000",
+                        "G#4": "2220000",
+                        "A4":  "2210000",
+                        "A#4": "2200000",
+                        "B4":  "2100000",
+                        "C5":  "2000000",
+                        "C#5": "1000000",
+                        "D5":  "0000000",
+                        "D#5": "0222221",
+                        "E5":  "2222211",
+                        "F5":  "2222201",
+                        "F#5": "2222101",
+                        "G5":  "2222001",
+                        "G#5": "2220001",
+                        "A5":  "2210001",
+                        "A#5": "2200001",
+                        "B5":  "2100001",
+                        "C6":  "2000001",
+                        "C#6": "1000001",
+                        "D6":  "0000001"
+                  },
+                  formatString: "$1\n$2\n$3\n\n$4\n$5\n$6\n$+\n\n$note"
+            },
+            {
+                  "name": "F Whistle [F4-E6] (Prefer haf-holing)",
+                  "fingeringDict": {
+                        "F4":  "2222220",
+                        "F#4": "2222210",
+                        "G4":  "2222200",
+                        "G#4": "2222100",
+                        "A4":  "2222000",
+                        "A#4": "2220000",
+                        "B4":  "2210000",
+                        "C5":  "2200000",
+                        "C#5": "2100000",
+                        "D5":  "2000000",
+                        "D#5": "1000000",
+                        "E5":  "0000000",
+                        "F5":  "0222221",
+                        "F#5": "2222211",
+                        "G5":  "2222201",
+                        "G#5": "2222101",
+                        "A5":  "2222001",
+                        "A#5": "2220001",
+                        "B5":  "2210001",
+                        "C6":  "2200001",
+                        "C#6": "2100001",
+                        "D6":  "2000001",
+                        "D#6": "1000001",
+                        "E6":  "0000001"
+                  },
+                  formatString: "$1\n$2\n$3\n\n$4\n$5\n$6\n$+\n\n$note"
+            },
+            {
+                  "name": "G Whistle [G4-F#6] (Prefer haf-holing)",
+                  "fingeringDict": {
+                        "G4":  "2222220",
+                        "G#4": "2222210",
+                        "A4":  "2222200",
+                        "A#4": "2222100",
+                        "B4":  "2222000",
+                        "C5":  "2220000",
+                        "C#5": "2210000",
+                        "D5":  "2200000",
+                        "D#5": "2100000",
+                        "E5":  "2000000",
+                        "F5":  "1000000",
+                        "F#5": "0000000",
+                        "G5":  "0222221",
+                        "G#5": "2222211",
+                        "A5":  "2222201",
+                        "A#5": "2222101",
+                        "B5":  "2222001",
+                        "C6":  "2220001",
+                        "C#6": "2210001",
+                        "D6":  "2200001",
+                        "D#6": "2100001",
+                        "E6":  "2000001",
+                        "F6":  "1000001",
+                        "F#6": "0000001"
+                  },
+                  formatString: "$1\n$2\n$3\n\n$4\n$5\n$6\n$+\n\n$note"
+            },
+            {
+                  name: "Custom Chromatic G Whistle [G4-G#6] (9 holes)",
                   fingeringDict: {
                         "G4": "2222222220",
                         "G#4": "2222222200",
@@ -144,69 +266,37 @@ MuseScore {
                   formatString: "$1    \n$2\n$3\n$4\n$5\n\n$6\n$7\n$8\n$9\n$+\n$note"
             },
             {
-                  name: "High D Whistle (6 holes)",
-                  fingeringDict: {
-                        "D5": "2222220",
-                        "D#5": "2222210",
-                        "E5": "2222200",
-                        "F5": "2222100",
-                        "F#5": "2222000",
-                        "G5": "2220000",
-                        "G#5": "2210000",
-                        "A5": "2200000",
-                        "A#5": "2100000",
-                        "B5": "2000000",
-                        "C6": "0220000",
-                        "C#6": "0000000",
-                        "D6": "0222221",
-                        "D#6": "2222211",
-                        "E6": "2222201",
-                        "F6": "2222101",
-                        "F#6": "2222001",
-                        "G6": "2220001",
-                        "G#6": "2210001",
-                        "A6": "2200001",
-                        "A#6": "2100001",
-                        "B6": "2000001",
-                        "C7": "0202221",
-                        "C#7": "0000001",
-                        "D7": "2222222",
+                  "name": "Bb Whistle [Bb4-A6] (Prefer haf-holing)",
+                  "fingeringDict": {
+                        "A#4": "2222220",
+                        "B4":  "2222210",
+                        "C5":  "2222200",
+                        "C#5": "2222100",
+                        "D5":  "2222000",
+                        "D#5": "2220000",
+                        "E5":  "2210000",
+                        "F5":  "2200000",
+                        "F#5": "2100000",
+                        "G5":  "2000000",
+                        "G#5": "1000000",
+                        "A5":  "0000000",
+                        "A#5": "0222221",
+                        "B5":  "2222211",
+                        "C6":  "2222201",
+                        "C#6": "2222101",
+                        "D6":  "2222001",
+                        "D#6": "2220001",
+                        "E6":  "2210001",
+                        "F6":  "2200001",
+                        "F#6": "2100001",
+                        "G6":  "2000001",
+                        "G#6": "1000001",
+                        "A6":  "0000001"
                   },
                   formatString: "$1\n$2\n$3\n\n$4\n$5\n$6\n$+\n\n$note"
             },
             {
-                  name: "Low D Whistle (6 holes)",
-                  fingeringDict: {
-                        "D4": "2222220",
-                        "D#4": "2222210",
-                        "E4": "2222200",
-                        "F4": "2222100",
-                        "F#4": "2222000",
-                        "G4": "2220000",
-                        "G#4": "2210000",
-                        "A4": "2200000",
-                        "A#4": "2100000",
-                        "B4": "2000000",
-                        "C5": "0220000",
-                        "C#5": "0000000",
-                        "D5": "0222221",
-                        "D#5": "2222211",
-                        "E5": "2222201",
-                        "F5": "2222101",
-                        "F#5": "2222001",
-                        "G5": "2220001",
-                        "G#5": "2210001",
-                        "A5": "2200001",
-                        "A#5": "2100001",
-                        "B5": "2000001",
-                        "C6": "0202221",
-                        "C#6": "0000001",
-                        "D6": "2222222",
-                  },
-                  formatString: "$1\n$2\n$3\n\n$4\n$5\n$6\n$+\n\n$note"
-            },
-            {
-                  "name": "C Whistle (6 holes)",
+                  "name": "C Whistle [C4-C6] (Prefer cross-fingering)",
                   "fingeringDict": {
                         "C4": "2222220",
                         "C#4": "2222210",
@@ -233,6 +323,67 @@ MuseScore {
                         "A#5": "0202221",
                         "B5": "0000001",
                         "C6": "0222222",
+                  },
+                  formatString: "$1\n$2\n$3\n\n$4\n$5\n$6\n$+\n\n$note"
+            },
+            {
+              "name": "C Whistle [C4-C6] (Prefer half-holing)",
+              "fingeringDict": {
+                    "C4":  "2222220",
+                    "C#4": "2222210",
+                    "D4":  "2222200",
+                    "D#4": "2222100",
+                    "E4":  "2222000",
+                    "F4":  "2220000",
+                    "F#4": "2210000",
+                    "G4":  "2200000",
+                    "G#4": "2100000",
+                    "A4":  "2000000",
+                    "A#4": "1000000",
+                    "B4":  "0000000",
+                    "C5":  "0222221",
+                    "C#5": "2222211",
+                    "D5":  "2222201",
+                    "D#5": "2222101",
+                    "E5":  "2222001",
+                    "F5":  "2220001",
+                    "F#5": "2210001",
+                    "G5":  "2200001",
+                    "G#5": "2100001",
+                    "A5":  "2000001",
+                    "A#5": "1000001",
+                    "B5":  "0000001"
+              },
+              formatString: "$1\n$2\n$3\n\n$4\n$5\n$6\n$+\n\n$note"
+            },
+            {
+                  name: "High D Whistle [D5-D7] (Prefer half-holing)",
+                  fingeringDict: {
+                        "D5": "2222220",
+                        "D#5": "2222210",
+                        "E5": "2222200",
+                        "F5": "2222100",
+                        "F#5": "2222000",
+                        "G5": "2220000",
+                        "G#5": "2210000",
+                        "A5": "2200000",
+                        "A#5": "2100000",
+                        "B5": "2000000",
+                        "C6": "0220000",
+                        "C#6": "0000000",
+                        "D6": "0222221",
+                        "D#6": "2222211",
+                        "E6": "2222201",
+                        "F6": "2222101",
+                        "F#6": "2222001",
+                        "G6": "2220001",
+                        "G#6": "2210001",
+                        "A6": "2200001",
+                        "A#6": "2100001",
+                        "B6": "2000001",
+                        "C7": "0202221",
+                        "C#7": "0000001",
+                        "D7": "2222222",
                   },
                   formatString: "$1\n$2\n$3\n\n$4\n$5\n$6\n$+\n\n$note"
             }
