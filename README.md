@@ -52,25 +52,25 @@ This plugin was inspired by the [tin-whistle-tablature project](https://github.c
 
 Opening the plugin presents the configuration window:
 
-<div style="display: flex; gap: 16px;">
-  <figure>
-    <img src="imgs/GUI_LowD_Light.png" alt="GUI, light mode" width="400">
-    <figcaption><em>Light mode</em></figcaption>
-  </figure>
-  <figure>
-    <img src="imgs/GUI_Ocarina_Dark.png" alt="GUI, dark mode" width="400">
-    <figcaption><em>Dark mode</em></figcaption>
-  </figure>
-</div>
+<table align="center" border="0", width="90%">
+  <tr>
+    <td align="center"><img src="imgs/GUI_LowD_Light.png" alt="GUI, light mode" width="100%"></td>
+    <td align="center"><img src="imgs/GUI_Ocarina_Dark.png" alt="GUI, dark mode" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center"><em>Light mode</em></td>
+    <td align="center"><em>Dark mode</em></td>
+  </tr>
+</table>
 
 From here you can select a woodwind definition, customize settings or the format string, and apply to generate the tab.
 
 **Examples:**
 
->![Example Tab Generated for the Low D whistle](imgs/Example_Tab_LowD.png "Low D")
+>![Example Tab Generated for the Low D whistle](imgs/Example_Tab_LowD.png "Low D")<br>
 *Low D Whistle*
 
->![Example Tab Generated for the Ocarina](imgs/Example_Tab_Ocarina.png "Ocarina")
+>![Example Tab Generated for the Ocarina](imgs/Example_Tab_Ocarina.png "Ocarina")<br>
 *Alto C Ocarina*
 ---
 
