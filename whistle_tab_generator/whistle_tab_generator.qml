@@ -1216,6 +1216,9 @@ MuseScore {
                                           Layout.fillWidth: true
                                           model: profiles.map(p => p.name)
                                           currentIndex: currentProfileIndex
+                                          ToolTip.visible: hovered
+                                          ToolTip.delay: 500
+                                          ToolTip.text: "Select dictionary for fingering diagrams and sounding frequency"
                                           onActivated: {
                                                 profileChanged(index)
                                           }
@@ -1397,6 +1400,9 @@ MuseScore {
                                           color: sysPal.text
                                           selectionColor: sysPal.highlight
                                           selectedTextColor: sysPal.highlightedText
+                                          ToolTip.visible: hovered
+                                          ToolTip.delay: 500
+                                          ToolTip.text: "Font families, separated as CSV, to try to use for the staff text. List order reflects priority."
                                           background: Rectangle {
                                                 color: backgroundColor
                                                 border.color: textColor
@@ -1601,6 +1607,9 @@ MuseScore {
                                                 Label {
                                                       id: previewLabel
                                                       text: getPreviewText()
+                                                      ToolTip.visible: hovered
+                                                      ToolTip.delay: 1000
+                                                      ToolTip.text: "Due to a limitation, the preview font does not reflect the selected font"
                                                       //font.family: getFontStack()
                                                       //font.pointSize: userFontSize
                                                       color: textColor
