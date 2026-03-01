@@ -31,8 +31,8 @@ import MuseScore 3.0
 
 MuseScore {
       id: mscore
-      version: "4.2"
-      title: "ASCII Whistle Fingering"
+      version: "4.3"
+      title: "ASCII Whistle Tabs"
       description: "Inserts ASCII fingering diagrams using numerical dictionary"
       pluginType: "dialog"
       categoryCode: "composing-arranging-tools"
@@ -272,7 +272,7 @@ MuseScore {
                         "G6": "2222222222",
                         "G#6": "0222222222"
                   },
-                  formatString: "$1    \n$2\n$3\n$4\n$5\n\n$6\n$7\n$8\n$9\n$+\n$note"
+                  formatString: "$1   \n$2\n$3\n$4\n$5\n\n$6\n$7\n$8\n$9\n$+\n$note"
             },
             {
                   "name": "Bb Whistle [Bb4-A6] (Prefer haf-holing)",
@@ -815,8 +815,11 @@ MuseScore {
 
       function removeExistingAnnotations() {
             if (typeof curScore === "undefined") {
+                  errorDialog.open("Couldn't remove annotations, score undefined.")
                   return 0
             }
+
+            curScore.startCmd()
 
             var cursor = curScore.newCursor()
             var removed = 0
@@ -854,6 +857,8 @@ MuseScore {
                   }
             }
             console.log("Removed", removed, "existing annotations")
+
+            curScore.endCmd()
             return removed
       }
 
@@ -1483,17 +1488,45 @@ MuseScore {
                         // MIDDLE ROW - Undo/Redo/Reset Buttons
                         RowLayout {
                               Layout.columnSpan: 2
-                              Layout.alignment: Qt.AlignRight
+                              Layout.alignment: Qt.AlignLeft
+                              Layout.fillWidth: true
                               spacing: 10
                               Layout.topMargin: 10
                               Layout.bottomMargin: 10
 
                               Button {
+                                    id: removeButton
+                                    text: "Remove Tabs"
+                                    ToolTip.visible: hovered
+                                    ToolTip.delay: 500
+                                    ToolTip.text: "Remove all whistle tabs from the score"
+                                    background: Rectangle {
+                                          color: sysPal.button
+                                          border.color: textColor
+                                    }
+                                    contentItem: Text {
+                                          text: removeButton.text
+                                          color: textColor
+                                          horizontalAlignment: Text.AlignHCenter
+                                          verticalAlignment: Text.AlignVCenter
+                                    }
+                                    onClicked: {deleteDialog.open()}
+                              }
+
+                              //Spacer to right-align reset button
+                              Item {
+                                    Layout.fillWidth: true
+                              }
+
+                              Button {
                                     id: resetButton
                                     text: "Reset to Defaults"
+                                    ToolTip.visible: hovered
+                                    ToolTip.delay: 500
+                                    ToolTip.text: "Reset all settings to default values"
                                     contentItem: Text {
                                           text: resetButton.text
-                                          color: sysPal.buttonText
+                                          color: textColor
                                           horizontalAlignment: Text.AlignHCenter
                                           verticalAlignment: Text.AlignVCenter
                                     }
@@ -1502,7 +1535,7 @@ MuseScore {
                                           border.color: textColor
                                     }
                                     onClicked: {
-                                          resetToDefaults()
+                                          resetDialog.open()
                                     }
                               }
                         }
@@ -1707,6 +1740,33 @@ MuseScore {
                   overwriteDialog.close()
             }
       }
+      MessageDialog {
+            id: deleteDialog
+            title: "Confirm"
+            text: "This will delete all whistle annotations, continue?"
+            standardButtons: [StandardButton.Ok, StandardButton.Cancel]
+            onAccepted: {
+                  removeExistingAnnotations()
+                  quit()
+            }
+            onRejected: {
+                  deleteDialog.close()
+            }
+      }
+      MessageDialog {
+            id: resetDialog
+            title: "Confirm"
+            text: "This will refresh and reset all text configurations, whistle dictionaries and format strings. Continue?"
+            standardButtons: [StandardButton.Ok, StandardButton.Cancel]
+            onAccepted: {
+                  resetToDefaults()
+            }
+            onRejected: {
+                  resetDialog.close()
+            }
+      }
+
+
 
       //---------------------------------------------------------
       // Command pattern for undo/redo (unchanged)
