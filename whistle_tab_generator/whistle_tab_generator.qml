@@ -2,16 +2,20 @@
 //  MuseScore
 //  Music Composition & Notation
 //
-//  Generalized whistle tab plugin
-//  Requires the tin whistle font downloaded from Blayne Chastain:
-//     https://www.blaynechastain.com/tin-whistle-tab-sibelius-plugin/
+//  Highly flexible whistle tab plugin for MuseScore using ASCII symbols.
+//  Can be configured to generate tablature for an unlimited number of holes, with customized fingerings and tab layouts
 //
-//  Based on the Note Names Plugin which is:
+//  Inspired by the tin-whistle-tablature project:
+//  Copyright (C) 2018 Jon Gadsden
+//
+//  Which was inspired by the projects of
+//
+//  The Note Names Plugin:
 //  Copyright (C) 2012 Werner Schweer
 //  Copyright (C) 2013 - 2016 Joachim Schmitz
 //  Copyright (C) 2014 Jörn Eichler
 //
-//  and also based on the Recorder Woodwind Tablature plugin:
+//  and the Recorder Woodwind Tablature plugin:
 //  Copyright (C)2011 Dario Escobedo, Werner Schweer, Jens Iwanenko and others
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -29,7 +33,7 @@ MuseScore {
       id: mscore
       version: "4.2"
       title: "ASCII Whistle Fingering"
-      description: "Inserts ASCII fingering diagrams using binary dictionary"
+      description: "Inserts ASCII fingering diagrams using numerical dictionary"
       pluginType: "dialog"
       categoryCode: "composing-arranging-tools"
       thumbnailName: "whistle_tab_generator.png"
@@ -66,14 +70,14 @@ MuseScore {
       property real userLineSpacing: 0.7
       property string userFormatString: ""   // mirrors current profile's formatString
       property string userFontFamily: "Menlo, Consolas, Liberation Mono, Courier New, monospace"
-
+      property bool userTransposed: false
 
       property int defaultFontSize: 6
       property int defaultJustification: 1
       property real defaultOffsetY: 1.2
       property real defaultLineSpacing: 0.7
       property string defaultFontFamily: "Menlo, Consolas, Liberation Mono, Courier New, monospace"
-
+      property bool defaultTransposed: false
 
       // For undo/redo
       property var history: 0
@@ -87,6 +91,7 @@ MuseScore {
       //Dictionary for your whistle, specifying the note and the fingering pattern (left-> right, starting from the fipple end).
       //NOTE: Note specification convention here uses sharps, so e.g. a Bb whistle needs to be defined as A#
       //2 indicates a closed hole, 1 indicates a half hole, 0 indicates open hole. The last digit is a reserved section indicating how many plusses (+) should be drawn to signal overblowing.
+
 
 //      ○ = 0
 //      ◐ = 1
@@ -106,9 +111,13 @@ MuseScore {
 //                 "G#5": "     2  2  1    0  0  0  0 " <- overblow bit set to zero to indicate first octave
 //                              |  |  |    |  |  |  |
 // variables in format string: $1 $2 $3   $4 $5 $6 $+   and then $note would be replaced with 'G#5'
+// These variables are replaced by the corresponding symbol or text when run.
 
 
-//Can have any number of holes in the specification, but the formatting string must consume all hole variables
+      //Can have any number of holes in the specification
+      //NOTE: This plugin was generated from a maker's perspective, and thus the note names correspond with the sounding pitch, and not the
+      // typical octave shift down presented in notations. The dictionary can easily be edited to reflect the transposition, however, if desired.
+      //TODO: Add transposition checkmark which corrects notations to octave down pitch commonly used.
 
       //Whistle definitions
       property var defaultProfiles: [
@@ -426,6 +435,7 @@ MuseScore {
             property real storedOffsetY: 1.2
             property real storedLineSpacing: 0.6
             property string storedFontFamily: defaultFontFamily
+            property bool storedTransposed: false
       }
 
       //---------------------------------------------------------
@@ -447,6 +457,8 @@ MuseScore {
             spacingField.text = userLineSpacing.toFixed(1)
             justCombo.currentIndex = userJustification
             formatInput.text = userFormatString
+            transposedCheck.checked = userTransposed
+
                   profileCombo.currentIndex = currentProfileIndex
                   updatePreview()
       }
@@ -480,6 +492,7 @@ MuseScore {
             pluginSettings.storedOffsetY = userOffsetY
             pluginSettings.storedLineSpacing = userLineSpacing
             pluginSettings.storedFontFamily = userFontFamily
+            pluginSettings.storedTransposed = userTransposed
 
             console.log("Settings saved")
       }
@@ -524,7 +537,7 @@ MuseScore {
                   userOffsetY = pluginSettings.storedOffsetY ?? defaultOffsetY
                   userLineSpacing = pluginSettings.storedLineSpacing ?? defaultLineSpacing
                   userFontFamily = pluginSettings.storedFontFamily ?? defaultFontFamily
-
+                  userTransposed = pluginSettings.storedTransposed ?? defaultTransposed
 
                   if (typeof fontFamilyField !== 'undefined') {
                         fontFamilyField.text = userFontFamily
@@ -553,7 +566,7 @@ MuseScore {
             setUserOffsetY(defaultOffsetY)
             setUserLineSpacing(defaultLineSpacing)
             setUserFontFamily(defaultFontFamily)
-
+            userTransposed = defaultTransposed
 
             // 3. Update UI to reflect the new profile and settings
             userFormatString = getCurrentFormatString()
@@ -564,6 +577,8 @@ MuseScore {
                   offsetField.text = userOffsetY.toFixed(1)
                   spacingField.text = userLineSpacing.toFixed(1)
                   justCombo.currentIndex = userJustification
+                  transposedCheck.checked = userTransposed
+
 
                   // 4. Persist all changes to Settings
                   pluginSettings.storedProfiles = JSON.stringify(profiles.map(p => ({
@@ -577,6 +592,7 @@ MuseScore {
                   pluginSettings.storedOffsetY = userOffsetY
                   pluginSettings.storedLineSpacing = userLineSpacing
                   pluginSettings.storedFontFamily = userFontFamily
+                  pluginSettings.storedTransposed = userTransposed
                   pluginSettings.sync()   // optional: force immediate write
 
                   getHistory().end()
@@ -705,7 +721,7 @@ MuseScore {
                         }
 
                               //-------------------------------------------------
-                              // Replace plus placeholder ($+) with number of plusses based on plusBit
+                              // Replace plus placeholder ($+) with number of plusses based on plus bit
                               //-------------------------------------------------
 
                             while (output.indexOf("$+") !== -1) {
@@ -871,6 +887,9 @@ MuseScore {
                   if (cursor.element && cursor.element.type === Element.CHORD) {
                         var chord = cursor.element
                         var midi = chord.notes[0].pitch
+
+                        if (userTransposed) midi += 12
+
                         var noteName = pitchToName(midi)
 
                         var text = newElement(Element.STAFF_TEXT)
@@ -1437,9 +1456,20 @@ MuseScore {
                                                 }
                                           }
                                     }
-                                    Item {
-                                          height: 50  // Spacer
-                                          width: parent.width
+
+                                    CheckBox {
+                                          id: transposedCheck
+                                          Layout.columnSpan: 4
+                                          checked: userTransposed
+                                          text: "Transposed?"
+                                          ToolTip.visible: hovered
+                                          ToolTip.delay: 500
+                                          ToolTip.text: "When checked, notes are assumed to be written an octave lower than they sound (e.g. High D whistle: written D4 = sounding D5). Displayed note will be the sounding note"
+                                          palette.windowText: textColor
+                                          onToggled: {
+                                                userTransposed = checked
+                                                saveSettings()
+                                          }
                                     }
                               }
                         }
