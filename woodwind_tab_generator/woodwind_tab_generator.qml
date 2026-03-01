@@ -2,7 +2,7 @@
 //  MuseScore
 //  Music Composition & Notation
 //
-//  Highly flexible whistle tab plugin for MuseScore using ASCII symbols.
+//  Highly flexible Woodwind tab plugin for MuseScore using ASCII symbols.
 //  Can be configured to generate tablature for an unlimited number of holes, with customized fingerings and tab layouts
 //
 //  Inspired by the tin-whistle-tablature project:
@@ -31,12 +31,12 @@ import MuseScore 3.0
 
 MuseScore {
       id: mscore
-      version: "4.3"
+      version: "4.4"
       title: "ASCII Woodwind Fingering Tabs"
       description: "Inserts ASCII fingering diagrams using numerical dictionary"
       pluginType: "dialog"
       categoryCode: "composing-arranging-tools"
-      thumbnailName: "whistle_tab_generator.png"
+      thumbnailName: "woodwind_tab_generator.png"
 
       //Autoload font
       FontLoader {
@@ -1225,7 +1225,7 @@ MuseScore {
 
                         // PROFILE SELECTOR
                         GroupBox {
-                              title: "Whistle Profile"
+                              title: "Woodwind Profile"
                               Layout.fillWidth: true
                               Layout.columnSpan: 2
                               background: Rectangle {
@@ -1244,7 +1244,7 @@ MuseScore {
                                     spacing: 20
 
                                     Label {
-                                          text: "Select whistle:"
+                                          text: "Select Woodwind:"
                                           color: textColor
                                     }
                                     ComboBox {
@@ -1530,7 +1530,7 @@ MuseScore {
                                     text: "Remove Tabs"
                                     ToolTip.visible: hovered
                                     ToolTip.delay: 500
-                                    ToolTip.text: "Remove all whistle tabs from the score"
+                                    ToolTip.text: "Remove all woodwind tabs from the score"
                                     background: Rectangle {
                                           color: sysPal.button
                                           border.color: textColor
@@ -1749,7 +1749,7 @@ MuseScore {
 
       MessageDialog {
             id: errorDialog
-            title: "Whistle Tab Generator"
+            title: "Woodwind Tab Generator"
             text: "An error occurred"
             onAccepted: {
                   errorDialog.close()
@@ -1759,7 +1759,7 @@ MuseScore {
       MessageDialog {
             id: overwriteDialog
             title: "Existing Annotations Found"
-            text: "This score already contains whistle fingering annotations"
+            text: "This score already contains fingering annotations"
             detailedText: "Would you like to override them?"
             standardButtons: [StandardButton.Ok, StandardButton.Cancel]
             onAccepted: {
@@ -1774,7 +1774,7 @@ MuseScore {
       MessageDialog {
             id: deleteDialog
             title: "Confirm"
-            text: "This will delete all whistle annotations, continue?"
+            text: "This will delete all annotations, continue?"
             standardButtons: [StandardButton.Ok, StandardButton.Cancel]
             onAccepted: {
                   removeExistingAnnotations()
@@ -1787,7 +1787,7 @@ MuseScore {
       MessageDialog {
             id: resetDialog
             title: "Confirm"
-            text: "This will refresh and reset all text configurations, whistle dictionaries and format strings. Continue?"
+            text: "This will refresh and reset all text configurations, woodwind dictionaries and format strings. Continue?"
             standardButtons: [StandardButton.Ok, StandardButton.Cancel]
             onAccepted: {
                   resetToDefaults()
