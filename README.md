@@ -1,6 +1,6 @@
 # Woodwind Tab Generator for MuseScore 4
 
-A MuseScore Studio V4.X plugin for highly flexible fingering tab creation for woodwinds, using the familiar tin whistle tab style.
+A MuseScore Studio V4.X plugin for highly flexible fingering tab creation for woodwinds, using the familiar tin whistle tab style. This project aims to improve the accessibility of strange and wonderful woodwinds, or, just to make it easier to make a tab for that song you lik.
 
 ## Contents
 
@@ -9,6 +9,7 @@ A MuseScore Studio V4.X plugin for highly flexible fingering tab creation for wo
 - [Usage](#usage)
 - [Adding Your Own Woodwinds](#adding-your-own-woodwinds)
 - [Troubleshooting](#troubleshooting)
+- [Future Steps](#future-steps)
 
 ---
 
@@ -27,7 +28,7 @@ The plugin also remembers settings, responds to dark and light mode themes, supp
   <img src="imgs/Example_Tab_F.png" alt="GUI, dark mode" width="600">
 </p>
 
-This plugin was inspired by the [tin-whistle-tablature project](https://github.com/jgadsden/tin-whistle-tablature/tree/main), which has the notable advantage of reducing diagram size for short notes. This project also offers several additional advantages:
+This plugin was inspired by the [tin-whistle-tablature project](https://github.com/jgadsden/tin-whistle-tablature/tree/main), which has the notable advantage of reducing diagram size for short notes. This project however offers several other advantages:
 
 - **Completely customizable fingering diagrams** with support for an unlimited number of holes — especially useful for makers of unique designs such as the [Chromophone](https://www.natco.co/khromophone/specs.php), or uncommon whistles and woodwinds.
 - **Font installation is optional** — required custom font glyphs are sideloaded automatically when the extension loads.
@@ -125,3 +126,10 @@ Try transposing the music. If you are using an instrument like a whistle where t
 ## Feedback
 
 Did you find this plugin useful? Found a bug, or have a feature request? Feel free to [open an issue](../../issues) or leave a star :)
+
+## Future Steps
+Here are the current tasks for this project:
+
+* [ ] Make the transpose feature a numerical field to allow for non-octave transpositions, e.g. the clarinet
+* [ ] Allow plugin window to be resizable to prevent overflow on small screens
+* [ ] Add additional woodwind definitions
