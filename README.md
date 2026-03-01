@@ -1,6 +1,6 @@
 # Woodwind Tab Generator for MuseScore 4
 
-A MuseScore Studio V4.X plugin for highly flexible fingering tab creation for woodwinds, using the familiar tin whistle tab style. This project aims to improve the accessibility of strange and wonderful woodwinds, or, just to make it easier to make a tab for that song you lik.
+A MuseScore Studio V4.X plugin for highly flexible fingering tab creation for woodwinds, using the familiar tin whistle tab style. This project aims to improve the accessibility of strange and wonderful woodwinds, or, just to make it easier to make a tab for that song you like.
 
 ## Contents
 
