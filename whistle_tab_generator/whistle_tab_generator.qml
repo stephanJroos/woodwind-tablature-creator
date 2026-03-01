@@ -519,11 +519,11 @@ MuseScore {
                   currentProfileIndex = 0
 
                   // Load global settings (fall back to defaults if stored value is undefined)
-                  userFontSize = pluginSettings.storedFontSize || defaultFontSize
-                  userJustification = pluginSettings.storedJustification || defaultJustification
-                  userOffsetY = pluginSettings.storedOffsetY || defaultOffsetY
-                  userLineSpacing = pluginSettings.storedLineSpacing || defaultLineSpacing
-                  userFontFamily = pluginSettings.storedFontFamily || defaultFontFamily
+                  userFontSize = pluginSettings.storedFontSize ?? defaultFontSize
+                  userJustification = pluginSettings.storedJustification ?? defaultJustification
+                  userOffsetY = pluginSettings.storedOffsetY ?? defaultOffsetY
+                  userLineSpacing = pluginSettings.storedLineSpacing ?? defaultLineSpacing
+                  userFontFamily = pluginSettings.storedFontFamily ?? defaultFontFamily
 
 
                   if (typeof fontFamilyField !== 'undefined') {
