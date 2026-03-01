@@ -135,3 +135,7 @@ Here are the current tasks for this project:
 * [ ] Make the transpose feature a numerical field to allow for non-octave transpositions, e.g. the clarinet
 * [ ] Allow plugin window to be resizable to prevent overflow on small screens
 * [ ] Add additional woodwind definitions
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=stephanJroos/woodwind-tablature-creator&type=date&legend=top-left)](https://www.star-history.com/#stephanJroos/woodwind-tablature-creator&type=date&legend=top-left)
